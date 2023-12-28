@@ -3,7 +3,6 @@ package com.example.securitypilot.common.security.authentication;
 import com.example.securitypilot.common.security.jwt.JwtProvider;
 import com.example.securitypilot.domain.auth.token.Token;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -24,7 +23,7 @@ public class SecurityAuthenticationSuccessHandler implements AuthenticationSucce
             HttpServletRequest request,
             HttpServletResponse response,
             Authentication authentication
-    ) throws IOException, ServletException {
+    ) throws IOException {
         String email = authentication.getName();
         Token token = jwtProvider.generateToken(email);
 

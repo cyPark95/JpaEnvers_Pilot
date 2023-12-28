@@ -27,9 +27,10 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        log.info("LoadUser Username = {}", email);
         User user = userRepository.findByEmailWithAuthorization(email, domain)
                 .orElseThrow(RuntimeException::new);
+
+        log.info("LoadUser User = {}", user);
         return new PrincipalDetails(user);
     }
 }

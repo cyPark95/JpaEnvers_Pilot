@@ -69,10 +69,5 @@ public class User {
         domainAuthorities.add(domainAuthority);
     }
 
-    public Long getAuthorityId() {
-        return domainAuthorities.stream()
-                .map(domainAuthority -> domainAuthority.getAuthority().getId())
-                .findFirst()
-                .orElseThrow(RuntimeException::new);
-    }
+
 }

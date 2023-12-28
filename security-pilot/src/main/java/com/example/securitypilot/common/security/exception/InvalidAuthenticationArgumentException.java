@@ -7,8 +7,4 @@ public class InvalidAuthenticationArgumentException extends AuthenticationExcept
     public InvalidAuthenticationArgumentException(String msg) {
         super(msg);
     }
-
-    public InvalidAuthenticationArgumentException(String msg, Throwable cause) {
-        super(msg, cause);
-    }
 }

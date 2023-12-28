@@ -10,8 +10,12 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,7 +25,7 @@ import lombok.ToString;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@ToString(exclude = {"user", "authority"})
+@ToString(exclude = {"user", "authorities"})
 public class DomainAuthority {
 
     @Id
@@ -35,14 +39,16 @@ public class DomainAuthority {
     @JoinColumn(name = "userId")
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "authorityId")
-    private Authority authority;
+    @ManyToMany
+    @JoinTable(
+            name = "domain_authority",
+            joinColumns = @JoinColumn(name = "domainId")
+    )
+    private final Set<Authority> authorities = new HashSet<>();
 
     @Builder
-    private DomainAuthority(Domain domain, Authority authority) {
+    private DomainAuthority(Domain domain) {
         this.domain = domain;
-        this.authority = authority;
     }
 
     public void registerUser(User user) {
@@ -52,5 +58,9 @@ public class DomainAuthority {
 
         this.user = user;
         user.addDomainAuthority(this);
+    }
+
+    public void addAuthority(Authority authority) {
+        authorities.add(authority);
     }
 }

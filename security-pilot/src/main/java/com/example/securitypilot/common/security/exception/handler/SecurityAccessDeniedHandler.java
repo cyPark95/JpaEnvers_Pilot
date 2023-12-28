@@ -1,6 +1,5 @@
 package com.example.securitypilot.common.security.exception.handler;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -16,8 +15,8 @@ public class SecurityAccessDeniedHandler implements AccessDeniedHandler {
             HttpServletRequest request,
             HttpServletResponse response,
             AccessDeniedException accessDeniedException
-    ) throws IOException, ServletException {
-        log.error("[ERROR] AccessDeniedHandler", accessDeniedException);
+    ) throws IOException {
+        log.error("[ERROR] AccessDeniedHandler = {}", accessDeniedException.getMessage(), accessDeniedException);
         response.sendError(HttpServletResponse.SC_FORBIDDEN);
     }
 }

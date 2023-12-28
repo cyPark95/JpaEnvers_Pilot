@@ -38,12 +38,12 @@ public class JwtProvider {
     private final Key key;
     private final String grantType;
     private final Long tokenValidateInSeconds;
-    private final long accessTokenExpiredTime;
-    private final long refreshTokenExpiredTime;
+    private final Long accessTokenExpiredTime;
+    private final Long refreshTokenExpiredTime;
 
     public JwtProvider(
             @Value("${jwt.secret}") String secretKey,
-            @Value("${jwt.grand-type}") String grantType,
+            @Value("${jwt.grant-type}") String grantType,
             @Value("${jwt.token-validate-in-seconds}") Long tokenValidateInSeconds
     ) {
         this.key = getSecretKey(secretKey);
@@ -55,14 +55,14 @@ public class JwtProvider {
 
     public Token generateToken(String email) {
         return Token.builder()
-                .accessToken(createToken(email, refreshTokenExpiredTime))
+                .accessToken(createToken(email, accessTokenExpiredTime))
                 .grantType(grantType)
                 .expiresIn(tokenValidateInSeconds)
-                .refreshToken(createToken(email, accessTokenExpiredTime))
+                .refreshToken(createToken(email, refreshTokenExpiredTime))
                 .build();
     }
 
-    public String getUserId(String token)
+    public String getUsername(String token)
             throws ExpiredJwtException, UnsupportedJwtException, MalformedJwtException, SignatureException, IllegalArgumentException {
         Claims claims = getClaims(token);
         return claims.getSubject();
@@ -76,7 +76,7 @@ public class JwtProvider {
 
     private String createToken(String email, long expiredTime) {
         Date now = new Date();
-        Date expiredDate = new Date(System.currentTimeMillis() + expiredTime);
+        Date expiredDate = new Date(now.getTime() + expiredTime);
 
         return Jwts.builder()
                 .setHeader(createHeader())

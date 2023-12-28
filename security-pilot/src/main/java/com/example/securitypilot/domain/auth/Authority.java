@@ -30,7 +30,7 @@ public class Authority {
     @ManyToMany
     @JoinTable(
             name = "authority_menu",
-            joinColumns = @JoinColumn(name = "authority_id")
+            joinColumns = @JoinColumn(name = "authorityId")
     )
     private final Set<Menu> menus = new HashSet<>();
 

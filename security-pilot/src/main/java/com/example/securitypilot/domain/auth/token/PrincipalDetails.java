@@ -1,5 +1,6 @@
 package com.example.securitypilot.domain.auth.token;
 
+import com.example.securitypilot.domain.auth.Authority;
 import com.example.securitypilot.domain.user.User;
 import java.util.Collection;
 import java.util.List;
@@ -12,7 +13,8 @@ public record PrincipalDetails (User user) implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<String> authorityNames = user.getDomainAuthorities().stream()
-                .map(domainAuthority -> domainAuthority.getAuthority().getName())
+                .flatMap(domainAuthority -> domainAuthority.getAuthorities().stream())
+                .map(Authority::getName)
                 .toList();
         return AuthorityUtils.createAuthorityList(authorityNames);
     }
@@ -47,5 +49,10 @@ public record PrincipalDetails (User user) implements UserDetails {
         return true;
     }
 
-//    public List<Menu>
+    public boolean isAccessUrl(String requestUrl) {
+        return user.getDomainAuthorities().stream()
+                .flatMap(domainAuthority -> domainAuthority.getAuthorities().stream())
+                .flatMap(authority -> authority.getMenus().stream())
+                .anyMatch(menu -> menu.isMatch(requestUrl));
+    }
 }
