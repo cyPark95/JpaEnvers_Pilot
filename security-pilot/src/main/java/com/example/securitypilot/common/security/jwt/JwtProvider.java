@@ -3,7 +3,7 @@ package com.example.securitypilot.common.security.jwt;
 import static io.jsonwebtoken.SignatureAlgorithm.HS256;
 import static org.springframework.security.config.Elements.JWT;
 
-import com.example.securitypilot.domain.auth.token.Token;
+import com.example.securitypilot.common.security.token.Token;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -13,18 +13,12 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import java.security.Key;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 import javax.crypto.SecretKey;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -33,11 +27,9 @@ public class JwtProvider {
 
     private static final int MILLISECONDS_TO_SECONDS = 1000;
     private static final int TOKEN_REFRESH_INTERVAL = MILLISECONDS_TO_SECONDS * 24;
-    private static final String AUTHORITIES_KEY = "role";
 
     private final Key key;
     private final String grantType;
-    private final Long tokenValidateInSeconds;
     private final Long accessTokenExpiredTime;
     private final Long refreshTokenExpiredTime;
 
@@ -48,17 +40,17 @@ public class JwtProvider {
     ) {
         this.key = getSecretKey(secretKey);
         this.grantType = grantType;
-        this.tokenValidateInSeconds = tokenValidateInSeconds;
         this.accessTokenExpiredTime = tokenValidateInSeconds * MILLISECONDS_TO_SECONDS;
         this.refreshTokenExpiredTime = tokenValidateInSeconds * TOKEN_REFRESH_INTERVAL;
     }
 
     public Token generateToken(String email) {
         return Token.builder()
-                .accessToken(createToken(email, accessTokenExpiredTime))
                 .grantType(grantType)
-                .expiresIn(tokenValidateInSeconds)
+                .accessToken(createToken(email, accessTokenExpiredTime))
+                .accessTokenExpiresIn(accessTokenExpiredTime)
                 .refreshToken(createToken(email, refreshTokenExpiredTime))
+                .refreshTokenExpiresIn(refreshTokenExpiredTime)
                 .build();
     }
 
@@ -69,12 +61,11 @@ public class JwtProvider {
     }
 
     private SecretKey getSecretKey(String secretKey) {
-        String base64EncodedSecretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
-        byte[] keyBytes = Decoders.BASE64.decode(base64EncodedSecretKey);
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    private String createToken(String email, long expiredTime) {
+    private String createToken(String email, Long expiredTime) {
         Date now = new Date();
         Date expiredDate = new Date(now.getTime() + expiredTime);
 
@@ -100,11 +91,5 @@ public class JwtProvider {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-    }
-
-    private Collection<? extends GrantedAuthority> getGrantedAuthorities(Claims claims) {
-        return Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
     }
 }

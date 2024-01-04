@@ -4,7 +4,7 @@ import com.example.securitypilot.common.security.authentication.AuthenticationCo
 import com.example.securitypilot.common.security.authentication.SecurityAuthenticationFailureHandler;
 import com.example.securitypilot.common.security.authentication.SecurityAuthenticationFilter;
 import com.example.securitypilot.common.security.authentication.SecurityAuthenticationSuccessHandler;
-import com.example.securitypilot.common.security.authorization.JwtAuthorityConfigurer;
+import com.example.securitypilot.common.security.authorization.TokenAuthorityConfigurer;
 import com.example.securitypilot.common.security.exception.handler.SecurityAccessDeniedHandler;
 import com.example.securitypilot.common.security.exception.handler.SecurityAuthenticationEntryPoint;
 import com.example.securitypilot.common.security.jwt.JwtProvider;
@@ -57,12 +57,12 @@ public class SecurityConfiguration {
         http
                 .with(
                         new AuthenticationConfigurer<>(new SecurityAuthenticationFilter(objectMapper)),
-                        adapter -> adapter
+                        SecurityAuthenticationFilter -> SecurityAuthenticationFilter
                                 .successHandler(createAuthenticationSuccessHandler())
                                 .failureHandler(createAuthenticationFailureHandler())
                 )
                 .with(
-                        new JwtAuthorityConfigurer(jwtProvider, userDetailsService),
+                        new TokenAuthorityConfigurer(jwtProvider, userDetailsService),
                         Customizer.withDefaults()
                 )
                 .exceptionHandling(exceptionHandling -> exceptionHandling
@@ -81,7 +81,7 @@ public class SecurityConfiguration {
     }
 
     private SecurityAuthenticationFailureHandler createAuthenticationFailureHandler() {
-        return new SecurityAuthenticationFailureHandler();
+        return new SecurityAuthenticationFailureHandler(objectMapper);
     }
 
     private SecurityAuthenticationEntryPoint createAuthenticationEntryPoint() {

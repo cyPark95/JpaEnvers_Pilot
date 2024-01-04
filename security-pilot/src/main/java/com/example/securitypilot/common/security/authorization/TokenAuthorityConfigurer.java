@@ -9,7 +9,7 @@ import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
 
 @RequiredArgsConstructor
-public class JwtAuthorityConfigurer
+public class TokenAuthorityConfigurer
         extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> {
 
     private final JwtProvider jwtProvider;
@@ -22,7 +22,7 @@ public class JwtAuthorityConfigurer
     @Override
     public void configure(HttpSecurity builder) {
         builder.addFilterBefore(
-                new JwtAuthorizationFilter(jwtProvider, userDetailsService),
+                new TokenAuthorizationFilter(jwtProvider, userDetailsService),
                 AuthorizationFilter.class
         );
     }

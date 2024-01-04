@@ -1,15 +1,13 @@
 package com.example.securitypilot.common.security.exception.handler;
 
-import static com.example.securitypilot.common.security.exception.SecurityErrorCode.SECURITY_ERROR_CODE_KEY;
-
 import com.example.securitypilot.common.response.ErrorResponse;
-import com.example.securitypilot.common.security.exception.SecurityErrorCode;
+import com.example.securitypilot.common.security.exception.DefaultAuthenticationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -30,22 +28,15 @@ public class SecurityAuthenticationEntryPoint implements AuthenticationEntryPoin
             AuthenticationException authException
     ) throws IOException {
         log.error("[ERROR] AuthenticationEntryPoint = {}", authException.getMessage());
-        ErrorResponse errorResponse = createResponse(request, authException);
+        ErrorResponse errorResponse = createResponse(authException);
         sendErrorResponse(response, errorResponse);
     }
 
-    private static ErrorResponse createResponse(
-            HttpServletRequest request,
-            AuthenticationException authException
-    ) {
-        Object attribute = request.getAttribute(SECURITY_ERROR_CODE_KEY);
-
-        if (Objects.isNull(attribute)) {
-            return ErrorResponse.of(authException.getMessage());
+    private ErrorResponse createResponse(AuthenticationException authException) {
+        if (authException instanceof DefaultAuthenticationException e) {
+            return ErrorResponse.of(e.getCode(), e.getMessage());
         }
-
-        SecurityErrorCode securityErrorCode = (SecurityErrorCode) attribute;
-        return ErrorResponse.of(securityErrorCode.getCode(), securityErrorCode.getMessage());
+        return ErrorResponse.of(authException.getMessage());
     }
 
     private void sendErrorResponse(HttpServletResponse response, ErrorResponse errorResponse)
@@ -53,6 +44,7 @@ public class SecurityAuthenticationEntryPoint implements AuthenticationEntryPoin
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        objectMapper.writeValue(response.getWriter(), errorResponse);
+        PrintWriter writer = response.getWriter();
+        objectMapper.writeValue(writer, errorResponse);
     }
 }

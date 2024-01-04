@@ -1,7 +1,7 @@
 package com.example.securitypilot.common.security.authentication;
 
 import com.example.securitypilot.common.security.jwt.JwtProvider;
-import com.example.securitypilot.domain.auth.token.Token;
+import com.example.securitypilot.common.security.token.Token;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

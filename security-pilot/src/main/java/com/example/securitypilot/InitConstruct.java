@@ -1,15 +1,13 @@
 package com.example.securitypilot;
 
-import static com.example.securitypilot.domain.auth.Domain.BUILDER;
-import static com.example.securitypilot.domain.auth.Domain.UAT;
-
 import com.example.securitypilot.domain.auth.Authority;
-import com.example.securitypilot.domain.auth.DomainAuthority;
+import com.example.securitypilot.domain.auth.Domain;
+import com.example.securitypilot.domain.auth.DomainType;
 import com.example.securitypilot.domain.auth.Menu;
 import com.example.securitypilot.domain.user.User;
-import com.example.securitypilot.infrastructure.user.UserRepository;
 import com.example.securitypilot.infrastructure.auth.AuthorityRepository;
 import com.example.securitypilot.infrastructure.auth.MenuRepository;
+import com.example.securitypilot.infrastructure.user.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.InitializingBean;
@@ -26,7 +24,7 @@ public class InitConstruct implements InitializingBean {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         init();
     }
 
@@ -55,6 +53,12 @@ public class InitConstruct implements InitializingBean {
                 .build();
         menuRepository.saveAll(List.of(studyInfo, crfInfo, statistics));
 
+        Authority bmu = Authority.builder()
+                .name("BMU")
+                .build();
+        bmu.addMenu(study);
+        bmu.addMenu(crf);
+
         Authority dm = Authority.builder()
                 .name("DM")
                 .build();
@@ -65,7 +69,6 @@ public class InitConstruct implements InitializingBean {
                 .build();
         pi.addMenu(studyInfo);
         pi.addMenu(crfInfo);
-        pi.addMenu(statistics);
 
         Authority cro = Authority.builder()
                 .name("CRO")
@@ -73,38 +76,38 @@ public class InitConstruct implements InitializingBean {
         cro.addMenu(studyInfo);
         cro.addMenu(crfInfo);
 
-        authorityRepository.saveAll(List.of(dm, pi, cro));
+        authorityRepository.saveAll(List.of(bmu, dm, pi, cro));
 
-        User builder = User.createBuilder(
-                "builder@gmail.com",
-                passwordEncoder.encode("builderPassword"),
-                "builder"
-        );
-
-        User user = User.createUser(
-                "user@gmail.com",
-                passwordEncoder.encode("userPassword"),
-                "user"
-        );
-
-        DomainAuthority builderDm = DomainAuthority.builder()
-                .domain(BUILDER)
-                .authority(dm)
+        User builder = User.builder()
+                .email("builder@gmail.com")
+                .password(passwordEncoder.encode("builderPassword"))
+                .name("builder")
                 .build();
 
-        DomainAuthority builderCro = DomainAuthority.builder()
-                .domain(BUILDER)
-                .authority(cro)
+        User user = User.builder()
+                .email("user@gmail.com")
+                .password(passwordEncoder.encode("userPassword"))
+                .name("user")
                 .build();
 
-        DomainAuthority uatPi = DomainAuthority.builder()
-                .domain(UAT)
-                .authority(pi)
+        Domain builderBuilder = Domain.builder()
+                .domainType(DomainType.BUILDER)
                 .build();
+        builderBuilder.addAuthority(bmu);
+        builderBuilder.addAuthority(dm);
+        builderBuilder.registerUser(builder);
 
-        builderDm.registerUser(builder);
-        builderCro.registerUser(user);
-        uatPi.registerUser(builder);
+        Domain builderUat = Domain.builder()
+                .domainType(DomainType.UAT)
+                .build();
+        builderUat.addAuthority(pi);
+        builderUat.registerUser(builder);
+
+        Domain userUat = Domain.builder()
+                .domainType(DomainType.UAT)
+                .build();
+        userUat.addAuthority(cro);
+        userUat.registerUser(user);
 
         userRepository.saveAll(List.of(builder, user));
     }

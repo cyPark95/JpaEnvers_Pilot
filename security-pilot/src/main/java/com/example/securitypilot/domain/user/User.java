@@ -1,6 +1,6 @@
 package com.example.securitypilot.domain.user;
 
-import com.example.securitypilot.domain.auth.DomainAuthority;
+import com.example.securitypilot.domain.auth.Domain;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -11,6 +11,7 @@ import jakarta.persistence.Table;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -19,7 +20,7 @@ import lombok.ToString;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "users")
-@ToString(exclude = "domainAuthorities")
+@ToString(exclude = "domains")
 public class User {
 
     @Id
@@ -29,44 +30,27 @@ public class User {
     private String email;
     private String password;
     private String name;
-    private boolean isBuilder;
+//    private boolean isBuilder;
 
     @OneToMany(
             mappedBy = "user",
             cascade = CascadeType.ALL, orphanRemoval = true
     )
-    private final Set<DomainAuthority> domainAuthorities = new HashSet<>();
+    private final Set<Domain> domains = new HashSet<>();
 
+    @Builder
     private User(
             String email,
             String password,
-            String name,
-            boolean isBuilder
+            String name
     ) {
         this.email = email;
         this.password = password;
         this.name = name;
-        this.isBuilder = isBuilder;
     }
 
-    public static User createBuilder(
-            String email,
-            String password,
-            String name
-    ) {
-        return new User(email, password, name, true);
-    }
-
-    public static User createUser(
-            String email,
-            String password,
-            String name
-    ) {
-        return new User(email, password, name, false);
-    }
-
-    public void addDomainAuthority(DomainAuthority domainAuthority) {
-        domainAuthorities.add(domainAuthority);
+    public void addDomain(Domain domain) {
+        domains.add(domain);
     }
 
 
